@@ -1,8 +1,10 @@
 import { useEffect, useState } from "react";
 import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, Typography } from "../../../node_modules/@mui/material/index";
-import axios from "../../../node_modules/axios/index";
 import { useParams } from "../../../node_modules/react-router-dom/dist/index";
 import { Product } from "../../models/Product";
+import agents from "../../app/api/agent";
+import NotFound from "../../app/errors/NotFound";
+import Loading from "../../app/layout/Loading";
 
 export default function ProductDetails() {
     const { id } = useParams<{ id: string }>();
@@ -10,14 +12,14 @@ export default function ProductDetails() {
     const [loading,setLoading]=useState(true);
 
     useEffect(() => {
-        axios.get(`http://localhost:5000/api/Products/${id}`)
-        .then(res=>setProduct(res.data))
+        id && agents.Catalog.details(parseInt(id))
+        .then(res=>setProduct(res))
         .catch(err=>console.log(err))
         .finally(()=>setLoading(false));
     },[id])
 
-    if(loading) return <h3>Loading....</h3>
-    if(!product) return <h3>Product not found</h3>
+    if(loading) return <Loading message='Loading product...'/>
+    if(!product) return <NotFound/>
     return (
         <Grid container spacing={6}>
             <Grid item xs={6}>
