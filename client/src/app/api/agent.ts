@@ -5,6 +5,8 @@ import { router } from "../router/Routes";
 
 const sleep=()=>new Promise(resolve=>setTimeout(resolve,500));
 axios.defaults.baseURL='http://localhost:5000/api/';
+axios.defaults.withCredentials=true;
+
 const responseBody=(res:AxiosResponse)=>res.data;
 
 axios.interceptors.response.use(async res=>{
@@ -57,11 +59,16 @@ const TestErrors={
     get401Error:()=>requests.get('Buggy/unauthorised'),
     get404Error:()=>requests.get('Buggy/not-found'),
     get500Error:()=>requests.get('Buggy/server-error'),
-    getValidationError:()=>requests.get('Buggy/validation-error'),
-
+    getValidationError:()=>requests.get('Buggy/validation-error')
+}
+const Basket={
+    get:()=>requests.get('basket'),
+    addItem:(productId:number,quantity=1)=>requests.post(`basket?productId=${productId}&quantity=${quantity}`,{}),
+    removeItem:(productId:number,quantity=1)=>requests.delete(`basket?productId=${productId}&quantity=${quantity}`)
 }
 const agents={
     Catalog,
-    TestErrors
+    TestErrors,
+    Basket
 }
 export default agents;
