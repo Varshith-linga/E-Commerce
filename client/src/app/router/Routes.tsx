@@ -1,4 +1,4 @@
-import { Checkbox } from "../../../node_modules/@mui/material/index";
+
 import { createBrowserRouter, Navigate } from "../../../node_modules/react-router-dom/dist/index";
 import AboutPage from "../../features/about/AboutPage";
 import BasketPage from "../../features/basket/BasketPage";

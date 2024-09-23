@@ -1,31 +1,28 @@
 import { useEffect, useState } from "react";
 import { Divider, Grid, Table, TableBody, TableCell, TableContainer, TableRow, TextField, Typography } from "../../../node_modules/@mui/material/index";
-import { useParams } from "../../../node_modules/react-router-dom/dist/index";
-import { Product } from "../../models/Product";
-import agents from "../../app/api/agent";
+import { useParams } from "../../../node_modules/react-router-dom";
+///dist/index
 import NotFound from "../../app/errors/NotFound";
 import Loading from "../../app/layout/Loading";
-import { useStoreContext } from "../../app/context/StoreContext";
 import { LoadingButton } from "../../../node_modules/@mui/lab/index";
+import { useAppDispatch, useAppSelector } from "../../app/store/configureStore";
+import { addBasketItemAsync, removeBasketItemAsync } from "../basket/BasketSlice";
+import { fetchProductAsync, productSelectors } from "./catalogSlice";
 
 export default function ProductDetails() {
-    const { basket,setBasket,removeItem} = useStoreContext();
+    const { basket,status}=useAppSelector((state:any)=>state.basket);
+    const dispatch=useAppDispatch();
     const { id } = useParams<{ id: string }>();
-    const [product,setProduct]=useState<Product | null>(null);
-    const [loading,setLoading]=useState(true);
+    const product=useAppSelector((state:any)=>productSelectors.selectById(state,id));
+    const {status: productStatus}=useAppSelector((state:any)=>state.catalog);
     const [quantity,setQuantity]=useState(0);
-    const[submitting,setSubmitting]=useState(false);
     const item =basket?.items.find(i=>i.productId===product?.id);
 
 
     useEffect(() => {
         if(item) setQuantity(item.quantity);
-        
-        id && agents.Catalog.details(parseInt(id))
-        .then(res=>setProduct(res))
-        .catch(err=>console.log(err))
-        .finally(()=>setLoading(false));
-    },[id,item])
+        if(!product) dispatch(fetchProductAsync(parseInt(id)));
+    },[id,item,dispatch,product])
 
     function handleInputChange(e:any){
         if(e.target.value>0){
@@ -35,24 +32,18 @@ export default function ProductDetails() {
 
     function handleUpdateCart(){
         if(!product) return;
-        setSubmitting(true);
         if(!item || quantity>item.quantity){
             const updateQuantity=item?quantity-item.quantity:quantity;
-            agents.Basket.addItem(product.id,updateQuantity)
-            .then(basket=>setBasket(basket))
-            .catch(err=>console.log(err))
-            .finally(()=>setSubmitting(false))
+            dispatch(addBasketItemAsync({productId: product.id,quantity: updateQuantity}))
         }
         else{
             const updateQuantity=item.quantity-quantity;
-            agents.Basket.removeItem(product.id,updateQuantity).
-            then(()=>removeItem(product.id,updateQuantity))
-            .catch(err=>console.log(err))
-            .finally(()=>setSubmitting(false))
+            dispatch(removeBasketItemAsync({productId: product.id,quantity: updateQuantity}))
+
         }
     }
 
-    if(loading) return <Loading message='Loading product...'/>
+    if(productStatus.includes('pending')) return <Loading message='Loading product...'/>
     if(!product) return <NotFound/>
     return (
         <Grid container spacing={6}>
@@ -94,7 +85,7 @@ export default function ProductDetails() {
                         <TextField onChange={handleInputChange} variant='outlined' type='number' label='Quantity in Cart' fullWidth value={quantity}/>
                     </Grid>
                     <Grid item xs={6}>
-                        <LoadingButton disabled={item?.quantity===quantity || !item && quantity===0} loading={submitting} onClick={handleUpdateCart}
+                        <LoadingButton disabled={item?.quantity===quantity || !item && quantity===0} loading={status.includes('pending')} onClick={handleUpdateCart}
                          sx={{height:'55px'}} color='primary' size='large' variant='contained' fullWidth>
                             {item?'Update Quantity':'Add  to Cart'}
                         </LoadingButton>
