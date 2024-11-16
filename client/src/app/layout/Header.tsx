@@ -2,8 +2,8 @@ import ShoppingCart from '@mui/icons-material/ShoppingCart';
 import { AppBar, Badge, Box, IconButton, List, ListItem, Switch, Toolbar, Typography } from "../../../node_modules/@mui/material/index";
 import { Link } from '../../../node_modules/react-router-dom/dist/index';
 import { NavLink } from "../../../node_modules/react-router-dom/dist/index";
-import { useStoreContext } from '../context/StoreContext';
 import { useAppSelector } from '../store/configureStore';
+import SignedInMenu from './SignedInMenu';
 
 const midLinks = [
     { title: 'catalog', path: '/catalog' },
@@ -33,8 +33,10 @@ interface Props {
     handleThemeChange: () => void;
 }
 export default function Header({ darkMode, handleThemeChange }: Props) {
-    const {basket} =useAppSelector(state=>state.basket);
-    const itemCount=basket?.items.reduce((sum,item)=>sum+item.quantity,0)
+    const {basket} =useAppSelector((state:any)=>state.basket);
+    const {user} =useAppSelector((state:any)=>state.account);
+
+    const itemCount=basket?.items.reduce((sum:any,item:any)=>sum+item.quantity,0)
     
     return (
         <AppBar position='static' sx={{ mb: 4 }}>
@@ -62,13 +64,17 @@ export default function Header({ darkMode, handleThemeChange }: Props) {
                     </IconButton>
 
 
-                    <List sx={{ display: 'flex' }}>
+                    {user?(
+                    <SignedInMenu/>
+                    ):(
+                        <List sx={{ display: 'flex' }}>
                         {rightLinks.map(({ title, path }) => (
                             <ListItem key={path} component={NavLink} to={path} sx={navStyles}>
                                 {title.toUpperCase()}
                             </ListItem>
                         ))}
                     </List>
+                    )}
                 </Box>
             </Toolbar>
         </AppBar>

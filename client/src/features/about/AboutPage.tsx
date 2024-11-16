@@ -8,7 +8,7 @@ export default function AboutPage(){
     function getValidationError(){
         agent.TestErrors.getValidationError()
         .then(()=>console.log('should not see this'))
-        .catch(err=>setValidationErrors(err));
+        .catch((err:any)=>setValidationErrors(err));
     }
     return(
         <Container>

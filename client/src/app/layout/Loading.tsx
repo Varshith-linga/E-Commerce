@@ -1,4 +1,4 @@
-import { Backdrop, Box, CircularProgress, Typography } from "../../../node_modules/@mui/material/index";
+import { Backdrop, Box, CircularProgress, Typography } from "@mui/material";
 interface Props{
     message?:string
 }
